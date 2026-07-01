@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Roulette Master</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;-webkit-user-select:none;user-select:none}
+input,textarea,select{-webkit-user-select:text;user-select:text}
+body{font-family:'Segoe UI',sans-serif;background:#000;color:#fff}
+.main-wrapper{display:flex;flex-direction:row;min-height:100vh}
+.left-panel{flex:1.6;display:flex;flex-direction:column;border-right:2px solid #333}
+.right-panel{flex:1;background:#050505;padding:10px}
+.dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:10px;background:#111}
+.card{background:#ffffff0d;border:1px solid #444;padding:6px 4px;border-radius:4px;text-align:center}
+.lbl{font-size:.55rem;color:#aaa;display:block;margin-bottom:2px}
+.val{font-size:1rem;font-weight:800;color:#d4af37;line-height:1.2}
+.input-container{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px 0}
+.wheel-box{width:95%;max-width:560px}
+.wheel-svg{width:100%;height:auto;display:block;overflow:visible}
+@keyframes ringPulse{0%,to{stroke-width:5;opacity:1;stroke:#ffe566}50%{stroke-width:9;opacity:.7;stroke:gold}}
+.wheel-ring-selected{animation:ringPulse 1s ease-in-out infinite;stroke:#ffe566!important;stroke-width:6!important;filter:drop-shadow(0 0 6px #ffd700)}
+.wheel-ring-history{stroke:#00e5ff!important;stroke-width:4!important;opacity:.85!important;filter:drop-shadow(0 0 4px #00e5ff)}
+.wheel-ring-hot{animation:hotBlink .8s ease-in-out infinite;stroke:#ff3d00!important;stroke-width:6!important;filter:drop-shadow(0 0 10px #ff3d00)}
+@keyframes hotBlink{0%,to{opacity:1}50%{opacity:.35}}
+.wheel-ring-predicted{stroke:#d4af37!important;stroke-width:4!important;opacity:0.8!important}
+.board-wrap{width:95%;background:#003d21;padding:8px;border-radius:8px;border:2px solid #005a32;display:flex;gap:4px}
+.zero-cell{width:44px;display:flex;align-items:center;justify-content:center;background:#0f8;color:#000;cursor:pointer;border-radius:4px;font-weight:700;font-size:1rem}
+.board-grid{display:grid;grid-template-rows:repeat(3,1fr);grid-auto-flow:column;gap:3px;flex-grow:1}
+.board-cell{height:40px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,.1)}
+.board-cell.selected,.zero-cell.selected{outline:2.5px solid #ffd700;box-shadow:0 0 8px #ffd70088}
+.board-cell.predicted{outline:2px solid #d4af37!important;box-shadow:0 0 6px #d4af3766!important}
+.zero-cell.predicted{outline:2px solid #d4af37!important;box-shadow:0 0 6px #d4af3766!important}
+.scrollable-logs-zone{padding:12px;background:#080808}
+.list-box{background:#111;border-radius:8px;padding:10px;border:1px solid #333;margin-bottom:10px}
+.box-header{color:#d4af37;font-size:.75rem;font-weight:700;margin-bottom:8px;border-bottom:1px solid #333;padding-bottom:5px}
+.flex-wrap{display:flex;flex-wrap:wrap;gap:5px}
+.mini-ball{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+.tag{width:42px;height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+.bottom-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:#0a0a0a;border-top:1px solid #2a2a2a}
+.bottom-sync-row{display:flex;gap:8px;padding:0 12px 10px;background:#0a0a0a;border-bottom:2px solid #d4af37}
+.btn{padding:12px;border:none;border-radius:6px;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem}
+.table-row{display:grid;grid-template-columns:44px 36px 1fr;border-bottom:1px solid #222}
+.row-n{background:#111;padding:7px 4px;text-align:center;font-weight:700}
+.row-c{background:#1a1a1a;padding:7px 4px;text-align:center;font-weight:800;color:#00e5ff;font-size:.8rem;border-left:1px solid #333;border-right:1px solid #333}
+.row-h{padding:7px 8px;color:#d4af37;font-family:monospace;font-size:.72rem;word-break:break-all}
+.tab-btn{flex:1;padding:8px 4px;border:1px solid #444;background:#111;color:#aaa;font-size:.7rem;font-weight:700;border-radius:4px;cursor:pointer}
+.active-tab{background:#d4af37!important;color:#000!important;border-color:#d4af37!important}
+.spinner{width:28px;height:28px;border:3px solid #333;border-top:3px solid #d4af37;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes predictBlink{0%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.06)}to{opacity:1;transform:scale(1)}}
+@keyframes outerBlink{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes outsideTextGlow{0%,100%{opacity:1;text-shadow:0 0 10px #ffd700cc,0 0 20px #ffd70066}50%{opacity:.4;text-shadow:0 0 5px #ffd70055}}
+@keyframes outsideTextGlow2{0%,100%{opacity:1;text-shadow:0 0 10px #ffd700cc,0 0 20px #ffd70066}50%{opacity:.4;text-shadow:0 0 5px #ffd70055}}
+@keyframes intBlink{0%,100%{opacity:1;box-shadow:0 0 5px #d4af37aa}50%{opacity:.3;box-shadow:none}}
+
+.int-hit-cur{animation:intBlink .85s ease-in-out infinite}
+@media(max-width:768px){.main-wrapper{flex-direction:column}.left-panel{border-right:none}.right-panel{border-top:2px solid #d4af37}.dashboard{grid-template-columns:repeat(2,1fr)}.board-cell{height:34px;font-size:.85rem}.zero-cell{width:36px;font-size:.85rem}.val{font-size:.9rem}}
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════════════════════════════
+const WHEEL_ORDER=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26]
+const REDS=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36])
+const ZV_N=new Set([22,18,29,7,28,12,35,3,26,0,32,15,19,4,21,2,25])
+const V_N=new Set([22,18,29,7,28,12,35,3,26,0,32,15,19,4,21,2,25])
+const O_N=new Set([1,20,14,31,9,17,34,6])
+const T_N=new Set([27,13,36,11,30,8,23,10,5,24,16,33])
+const ZONE1=new Set([5,10,23,8,30,11,36,13,27,6,34,1,20,14,31,16,24,33])
+const ZONE2=new Set([9,22,18,29,7,28,12,35,3,26,0,32,15,19,4,21,2,25,17])
+const UP_NUMS=new Set([1,3,5,7,9,10,12,14,16,18,20,22,23,24,28,29,31,33,35])
+const DOWN_NUMS=new Set([0,2,4,6,8,11,13,15,17,19,21,25,26,27,30,32,34,36])
+const SECTOR_MAP={}
+;[0,3,4,12,15,19,21,26,32,35].forEach(n=>SECTOR_MAP[n]='S1')
+;[1,5,8,10,16,23,24,30,33].forEach(n=>SECTOR_MAP[n]='S3')
+;[7,9,14,18,20,22,28,29,31].forEach(n=>SECTOR_MAP[n]='S2')
+;[2,6,11,13,17,25,27,34,36].forEach(n=>SECTOR_MAP[n]='S4')
+
+// ════════════════════════════════════════════════════════════════
+// DEMO PREDICTION SEQUENCE  (reverse of original list)
+// Original: 28,7,14,28,22,2,6,8,11,24,23,34,30,14,4,11,2,15,21,24,21,11,19,18,33,6,17,30,36,15,10,24,34,5,8,2,10,31,27,33,21,23,21,16,1,35,32,18,34,14,36
+// Reversed = user enters these; app predicts the NEXT one each time
+// ════════════════════════════════════════════════════════════════
+const DEMO_SEQ=[36,14,34,18,32,35,1,16,21,23,21,33,27,31,10,2,8,5,34,24,10,15,36,30,17,6,33,18,19,11,21,24,21,15,2,11,4,14,30,34,23,24,11,8,6,2,22,28,14,7,28]
+
+// ════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════
+let history=[]   // numbers entered so far (null = dealer change)
+let spinIdx=0    // how many spins entered; DEMO_SEQ[spinIdx] = next prediction
+let activeTab='occ'
+
+// ════════════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════════════
+const isRed=n=>REDS.has(n)
+const numBg=n=>n===0?'#00ff88':isRed(n)?'#e63946':'#1a1a1a'
+const numFg=n=>n===0?'#000':'#fff'
+const numBdr=n=>n===0?'#00ff88':isRed(n)?'#ff6677':'rgba(255,255,255,.1)'
+const pct=(n,t)=>t?Math.round(n/t*100):0
+
+function wheelNeighbours(n,each){
+  const idx=WHEEL_ORDER.indexOf(n); if(idx<0) return []
+  const len=WHEEL_ORDER.length,r=[]
+  for(let i=-each;i<=each;i++) r.push(WHEEL_ORDER[(idx+i+len)%len])
+  return r
+}
+function streakOf(arr,fn){let s=0;for(let i=arr.length-1;i>=0;i--){if(fn(arr[i]))s++;else break}return s}
+function spinsSince(arr,fn){for(let i=arr.length-1;i>=0;i--){if(fn(arr[i]))return arr.length-1-i}return arr.length}
+
+// ════════════════════════════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════════════════════════════
+function addNumber(n){
+  history.push(n); spinIdx++; render()
+}
+function addDealerChange(){
+  if(!history.length)return; history.push(null); render()
+}
+function undo(){
+  if(!history.length)return
+  const last=history[history.length-1]
+  history.pop()
+  if(last!==null) spinIdx=Math.max(0,spinIdx-1)
+  render()
+}
+function newSession(){
+  if(history.length&&!confirm(`Clear ${history.filter(x=>x!==null).length} spins?`))return
+  history=[]; spinIdx=0; render()
+}
+function switchTab(t){
+  activeTab=t
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active-tab'))
+  document.getElementById('tab-'+t).classList.add('active-tab')
+  ;['occ','sessions','analytics'].forEach(id=>{
+    const el=document.getElementById('panel-'+id)
+    if(el) el.style.display=id===t?'block':'none'
+  })
+}
+
+// ════════════════════════════════════════════════════════════════
+// GET 8-NUMBER PREDICTION SET (actual number hidden among 7 decoys)
+// ════════════════════════════════════════════════════════════════
+function getPredSet(idx){
+  const pred=DEMO_SEQ[idx]
+  if(pred==null)return[]
+  // Deterministic pseudo-random based on idx
+  let seed=(idx*1664525+1013904223)&0xffffffff
+  const rand=()=>{seed=(seed*1664525+1013904223)&0xffffffff;return(seed>>>0)/0x100000000}
+  // Pick 7 decoys from the other 36 numbers
+  const pool=Array.from({length:37},(_,i)=>i).filter(n=>n!==pred)
+  // Shuffle pool deterministically
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
+  const decoys=pool.slice(0,7)
+  // Insert pred at a deterministic position
+  const pos=Math.floor(rand()*8)
+  const result=[...decoys]; result.splice(pos,0,pred)
+  return result
+}
+// ════════════════════════════════════════════════════════════════
+function drawWheel(){
+  const svg=document.getElementById('wheel-svg'); if(!svg)return
+  svg.innerHTML=''
+  const ns='http://www.w3.org/2000/svg'
+  const cx=450,cy=200,rx=400,ry=160,total=WHEEL_ORDER.length
+  const el=(tag,attrs,txt)=>{
+    const e=document.createElementNS(ns,tag)
+    Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v))
+    if(txt!=null)e.textContent=txt; return e
+  }
+
+  // VOT color bands
+  const votColor=n=>ZV_N.has(n)?'#1a237e':V_N.has(n)&&!ZV_N.has(n)?'#1565c0':O_N.has(n)?'#c2185b':T_N.has(n)?'#f57c00':'#555'
+  const votLabel=n=>ZV_N.has(n)?'ZV':O_N.has(n)?'O':T_N.has(n)?'T':V_N.has(n)?'V':'?'
+
+  // Outer rings
+  svg.appendChild(el('ellipse',{cx,cy,rx:rx+22,ry:ry+22,fill:'none',stroke:'#333','stroke-width':1}))
+
+  // VOT band arcs
+  const bRx=rx*0.78,bRy=ry*0.78,biRx=rx*0.55,biRy=ry*0.55
+  let sections=[],curr=null
+  WHEEL_ORDER.forEach((n,i)=>{
+    const lbl=votLabel(n),col=votColor(n),a=(i/total)*2*Math.PI
+    if(!curr||curr.label!==lbl){curr={label:lbl,color:col,sa:a,ea:a};sections.push(curr)}
+    else curr.ea=a
+  })
+  sections.forEach(s=>{
+    const slot=(2*Math.PI/total),sa=s.sa-slot*0.3,ea=s.ea+slot*0.3
+    const x1o=cx+bRx*Math.cos(sa),y1o=cy+bRy*Math.sin(sa)
+    const x2o=cx+bRx*Math.cos(ea),y2o=cy+bRy*Math.sin(ea)
+    const x1i=cx+biRx*Math.cos(ea),y1i=cy+biRy*Math.sin(ea)
+    const x2i=cx+biRx*Math.cos(sa),y2i=cy+biRy*Math.sin(sa)
+    const lg=(ea-sa)>Math.PI?1:0
+    svg.appendChild(el('path',{d:`M ${x1o} ${y1o} A ${bRx} ${bRy} 0 ${lg} 1 ${x2o} ${y2o} L ${x1i} ${y1i} A ${biRx} ${biRy} 0 ${lg} 0 ${x2i} ${y2i} Z`,fill:s.color,opacity:'0.18'}))
+    svg.appendChild(el('path',{d:`M ${x1o} ${y1o} A ${bRx} ${bRy} 0 ${lg} 1 ${x2o} ${y2o}`,fill:'none',stroke:s.color,'stroke-width':'2.5',opacity:'0.7'}))
+    const midA=(s.sa+s.ea)/2,lx=cx+((bRx+biRx)/2)*Math.cos(midA),ly=cy+((bRy+biRy)/2)*Math.sin(midA)
+    const lt=el('text',{x:lx,y:ly+6,'text-anchor':'middle',fill:s.color,'font-size':'22','font-weight':'900','font-family':'Segoe UI,sans-serif',opacity:'0.9'})
+    lt.textContent=s.label; svg.appendChild(lt)
+  })
+
+  // Zone arcs
+  const drawZone=(nums,color)=>{
+    const idxs=[...nums].map(n=>WHEEL_ORDER.indexOf(n)).filter(i=>i>=0).sort((a,b)=>a-b)
+    if(!idxs.length)return
+    const oRx=rx+14,oRy=ry+14
+    const aS=(idxs[0]/total)*2*Math.PI-(Math.PI/total)
+    const aE=(idxs[idxs.length-1]/total)*2*Math.PI+(Math.PI/total)
+    const lg=(aE-aS)>Math.PI?1:0
+    const x1=cx+oRx*Math.cos(aS),y1=cy+oRy*Math.sin(aS)
+    const x2=cx+oRx*Math.cos(aE),y2=cy+oRy*Math.sin(aE)
+    svg.appendChild(el('path',{d:`M ${x1} ${y1} A ${oRx} ${oRy} 0 ${lg} 1 ${x2} ${y2}`,fill:'none',stroke:color,'stroke-width':'4',opacity:'0.75','stroke-linecap':'round'}))
+  }
+  drawZone(ZONE1,'#42a5f5'); drawZone(ZONE2,'#ba68c8')
+
+  const real=history.filter(x=>x!==null)
+  const histCounts={}; real.forEach(n=>{histCounts[n]=(histCounts[n]||0)+1})
+  const maxCnt=real.length>=20?Math.max(0,...Object.values(histCounts)):0
+  const hotSet=new Set(maxCnt>2?Object.entries(histCounts).filter(([,c])=>c===maxCnt).map(([n])=>+n):[])
+  const last=real[real.length-1]??null
+  const predSet=new Set(spinIdx>0?getPredSet(spinIdx):[])
+
+  const grp=el('g',{id:'wheel-group'})
+  WHEEL_ORDER.forEach((n,i)=>{
+    const angle=(i/total)*2*Math.PI,bx=cx+rx*Math.cos(angle),by=cy+ry*Math.sin(angle)
+    const fill=n===0?'#00cc66':isRed(n)?'#c0202e':'#1c1c1c'
+    const stroke=n===0?'#00ff88':isRed(n)?'#ff6677':'#555'
+    const g=el('g',{id:`wg-${n}`,style:'cursor:pointer'}); g.onclick=()=>addNumber(n)
+    if(ZONE1.has(n)) g.appendChild(el('circle',{cx:bx,cy:by,r:25,fill:'none',stroke:'#42a5f5','stroke-width':'2',opacity:'0.5'}))
+    else if(ZONE2.has(n)) g.appendChild(el('circle',{cx:bx,cy:by,r:25,fill:'none',stroke:'#ba68c8','stroke-width':'2',opacity:'0.5'}))
+    const circ=el('circle',{cx:bx,cy:by,r:22,fill,stroke,'stroke-width':'1.5',id:`wc-${n}`})
+    g.appendChild(circ)
+    const txt=el('text',{x:bx,y:by+5,'text-anchor':'middle',fill:n===0?'#000':'#fff','font-size':n>=10?'16':'18','font-weight':'900','font-family':'Segoe UI,sans-serif'})
+    txt.textContent=n; g.appendChild(txt)
+    // count badge
+    const cnt=histCounts[n]||0
+    const cRx=rx+38,cRy=ry+38,cntX=cx+cRx*Math.cos(angle),cntY=cy+cRy*Math.sin(angle)
+    const cntTxt=el('text',{x:cntX,y:cntY+4,'text-anchor':'middle',id:`wcnt-${n}`,fill:cnt>0?'#d4af37':'#444','font-size':'13','font-weight':'900','font-family':'Segoe UI,sans-serif'})
+    cntTxt.textContent=cnt; grp.appendChild(cntTxt)
+    grp.appendChild(g)
+  })
+  svg.appendChild(grp)
+
+  const predSetW=spinIdx>0?new Set(getPredSet(spinIdx)):new Set()
+  WHEEL_ORDER.forEach(n=>{
+    const c=document.getElementById(`wc-${n}`); if(!c)return
+    c.className=''
+    if(n===last) c.classList.add('wheel-ring-selected')
+    else if(hotSet.has(n)) c.classList.add('wheel-ring-hot')
+    else if(real.includes(n)) c.classList.add('wheel-ring-history')
+    if(predSetW.has(n)&&n!==last) c.classList.add('wheel-ring-predicted')
+  })
+
+  // Centre foreignObject with session fields
+  const fo=document.createElementNS(ns,'foreignObject')
+  fo.setAttribute('x',450-90); fo.setAttribute('y',200-75)
+  fo.setAttribute('width','180'); fo.setAttribute('height','150')
+  fo.innerHTML=`<div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;gap:5px;">
+    <input id="wf-casino" placeholder="Casino Name" maxlength="16" style="width:100%;background:rgba(0,0,0,0.7);border:1px solid #555;border-radius:4px;color:#d4af37;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
+    <input id="wf-dealer" placeholder="Dealer Name" maxlength="14" style="width:100%;background:rgba(0,0,0,0.7);border:1px solid #555;border-radius:4px;color:#d4af37;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
+    <input id="wf-table" placeholder="Table No." maxlength="6" style="width:100%;background:rgba(0,0,0,0.7);border:1px solid #555;border-radius:4px;color:#d4af37;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
+    <input id="wf-date" type="date" style="width:100%;background:rgba(0,0,0,0.7);border:1px solid #555;border-radius:4px;color:#d4af37;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
+  </div>`
+  svg.appendChild(fo)
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDER DASHBOARD
+// ════════════════════════════════════════════════════════════════
+function renderDashboard(){
+  const d=document.getElementById('dashboard'); if(!d)return
+  const real=history.filter(x=>x!==null),v=real.filter(x=>x!==0),tot=real.length
+  const nbrLabels=real.map((n,i)=>getNeighbourLabel(n,i,real))
+  const count=lbl=>nbrLabels.filter(l=>l===lbl).length
+  const yn19seq=real.slice(1).map((n,i)=>new Set(wheelNeighbours(real[i],9)).has(n))
+  const yCount=yn19seq.filter(Boolean).length,nCount=yn19seq.filter(x=>!x).length
+  const zvC=real.filter(x=>ZV_N.has(x)).length,vC=real.filter(x=>V_N.has(x)&&!ZV_N.has(x)).length
+  const oC=real.filter(x=>O_N.has(x)).length,tC=real.filter(x=>T_N.has(x)).length
+  const zlC=real.filter(x=>ZONE1.has(x)).length,zrC=real.filter(x=>ZONE2.has(x)).length
+  const upC=real.filter(x=>UP_NUMS.has(x)).length,dnC=real.filter(x=>DOWN_NUMS.has(x)).length
+  const s13C=real.filter(x=>['S1','S3'].includes(SECTOR_MAP[x])).length
+  const s24C=real.filter(x=>['S2','S4'].includes(SECTOR_MAP[x])).length
+  const redC=real.filter(x=>isRed(x)).length,blkC=v.filter(x=>!isRed(x)).length
+  const oddC=v.filter(x=>x%2!==0).length,evnC=v.filter(x=>x%2===0).length
+  const hiC=v.filter(x=>x>=19).length,loC=v.filter(x=>x>=1&&x<=18).length
+  const d1C=v.filter(x=>x<=12).length,d2C=v.filter(x=>x>=13&&x<=24).length,d3C=v.filter(x=>x>=25).length
+  const r1C=v.filter(x=>x%3===1).length,r2C=v.filter(x=>x%3===2).length,r3C=v.filter(x=>x%3===0).length
+
+  const cards=[
+    {lbl:'Total Spins',val:String(tot),color:'#d4af37'},
+    {lbl:'R/R1/R2/R3',val:`${count('R')}/${count('R1')}/${count('R2')}/${count('R3')}`,color:'#d4af37',small:true},
+    {lbl:'A/A1/A2/A3',val:`${count('A')}/${count('A1')}/${count('A2')}/${count('A3')}`,color:'#ff9800',small:true},
+    {lbl:'19 Nos / 18 Nos',val:`${yCount} / ${nCount}`,color:'#00E676'},
+    {lbl:'ZV/V/O/T',val:`${zvC}/${vC}/${oC}/${tC}`,color:'#42a5f5',small:true},
+    {lbl:'Zone L / Zone R',val:`${zlC} / ${zrC}`,color:'#ba68c8'},
+    {lbl:'Up / Down',val:`${upC} / ${dnC}`,color:'#26a69a'},
+    {lbl:'S13 / S24',val:`${s13C} / ${s24C}`,color:'#f59e0b'},
+    {lbl:'Dozen 1/2/3',val:`${d1C}/${d2C}/${d3C}`,color:'#d4af37',small:true},
+    {lbl:'Row 1/2/3',val:`${r1C}/${r2C}/${r3C}`,color:'#d4af37',small:true},
+    {lbl:'Odd / Even',val:`${oddC} / ${evnC}`,color:'#9c27b0'},
+    {lbl:'High / Low',val:`${hiC} / ${loC}`,color:'#ff9800'},
+    {lbl:'Red / Black',val:`${redC} / ${blkC}`,color:'#e63946'},
+    {lbl:'Spins',val:String(history.filter(x=>x!==null).length),color:'#aaa'},
+  ]
+  d.innerHTML=cards.map(c=>`<div class="card"><span class="lbl">${c.lbl}</span><div class="val" style="color:${c.color};font-size:${c.small?'.78rem':'1rem'}">${c.val}</div></div>`).join('')
+}
+
+// ════════════════════════════════════════════════════════════════
+// NEIGHBOUR LABEL (for R/R1/R2/R3/A/A1/A2/A3)
+// ════════════════════════════════════════════════════════════════
+function neighbourDist(a,b){
+  const ai=WHEEL_ORDER.indexOf(a),bi=WHEEL_ORDER.indexOf(b)
+  if(ai<0||bi<0)return null
+  const len=WHEEL_ORDER.length,diff=Math.min(Math.abs(bi-ai),len-Math.abs(bi-ai))
+  return diff<=3?diff:null
+}
+function getNeighbourLabel(n,origIdx,histArr){
+  if(n===null)return'DC'
+  const realPrev=[]; for(let i=origIdx-1;i>=0&&realPrev.length<3;i--){if(histArr[i]!==null)realPrev.push(histArr[i])}
+  const p1=realPrev[0]??null,p2=realPrev[1]??null
+  if(p1===null)return'∅'
+  if(n===p1)return'R'
+  const d1=neighbourDist(p1,n)
+  if(d1===1)return'R1'; if(d1===2)return'R2'; if(d1===3)return'R3'
+  if(p2!==null){
+    if(n===p2)return'A'
+    const d2=neighbourDist(p2,n)
+    if(d2===1)return'A1'; if(d2===2)return'A2'; if(d2===3)return'A3'
+  }
+  return'∅'
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDER BOARD
+// ════════════════════════════════════════════════════════════════
+function renderBoard(){
+  const grid=document.getElementById('board-grid'); if(!grid)return
+  const real=history.filter(x=>x!==null),last=real[real.length-1]??null
+  const predSet=new Set(getPredSet(spinIdx))
+  grid.innerHTML=''
+  for(let col=0;col<12;col++){
+    for(let row=3;row>=1;row--){
+      const n=col*3+row
+      const div=document.createElement('div')
+      let cls='board-cell'
+      if(last===n)cls+=' selected'
+      else if(predSet.has(n))cls+=' predicted'
+      div.className=cls
+      div.style.background=isRed(n)?'#e63946':'#1a1a1a'
+      div.textContent=n; div.onclick=()=>addNumber(n)
+      grid.appendChild(div)
+    }
+  }
+  const zero=document.getElementById('zero-cell')
+  if(zero){
+    zero.className='zero-cell'+(last===0?' selected':(predSet.has(0)?' predicted':''))
+    zero.onclick=()=>addNumber(0)
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDER PREDICTION SECTION
+// ════════════════════════════════════════════════════════════════
+function renderPrediction(){
+  const el=document.getElementById('pred-section'); if(!el)return
+  // Only predict AFTER user enters at least one number
+  const predSet=spinIdx>0?getPredSet(spinIdx):[]
+  const hasPred=predSet.length>0
+  const real=history.filter(x=>x!==null)
+  const lastNum=real[real.length-1]??null
+  const prevNum=real[real.length-2]??null
+
+  // Outside bet helpers
+  const getDozen=n=>n===0?null:n<=12?1:n<=24?2:3
+  const getColNum=n=>n===0?null:((n-1)%3)+1
+  const curD=getDozen(lastNum),altD=getDozen(prevNum)
+  const curC=getColNum(lastNum),altC=getColNum(prevNum)
+  const dozenActive=new Set([curD,altD].filter(Boolean))
+  const colActive=new Set([curC,altC].filter(Boolean))
+  const altIsRed=prevNum!==null&&prevNum!==0&&isRed(prevNum)
+  const altIsBlack=prevNum!==null&&prevNum!==0&&!isRed(prevNum)
+  const altIsOdd=prevNum!==null&&prevNum!==0&&prevNum%2!==0
+  const altIsEven=prevNum!==null&&prevNum!==0&&prevNum%2===0
+  const altIsHigh=prevNum!==null&&prevNum>=19
+  const altIsLow=prevNum!==null&&prevNum>=1&&prevNum<=18
+
+  const outCell=(active,label,h='30px',fs='0.6rem',ac='#ffd700')=>{
+    const bg=active?`linear-gradient(160deg,${ac}44,${ac}1a)`:'linear-gradient(160deg,#1a1006,#0d0a04)'
+    const border=active?`2px solid ${ac}`:'1px solid #3a2a0a'
+    const color=active?ac:'#7a6a4a'
+    const anim=active?'outerBlink 0.9s ease-in-out infinite':'none'
+    const shadow=active?`0 0 10px ${ac}cc,inset 0 0 6px ${ac}55`:'inset 0 0 4px #00000088'
+    return `<div style="display:flex;align-items:center;justify-content:center;border:${border};border-radius:4px;background:${bg};color:${color};font-weight:900;height:${h};font-size:${fs};animation:${anim};box-shadow:${shadow}">${label}</div>`
+  }
+
+  // Build mini board showing all 8 predicted numbers highlighted
+  const miniBoard=()=>{
+    const ps=new Set(predSet)
+    const colsHtml=Array.from({length:12},(_,c)=>{
+      const colNums=[c*3+3,c*3+2,c*3+1]
+      const colCnt=real.filter(x=>colNums.includes(x)).length
+      const hasPred=colNums.some(n=>ps.has(n))
+      return`<div style="display:flex;flex-direction:column;gap:2px">
+        <div style="height:16px;display:flex;align-items:center;justify-content:center;font-size:0.52rem;font-weight:900;color:${hasPred?'#d4af37':'#555'};border-bottom:1px solid #222">${colCnt}</div>
+        ${colNums.map(n=>{
+          const hit=ps.has(n)
+          return`<div class="${hit?'int-hit-cur':''}" style="height:24px;display:flex;align-items:center;justify-content:center;background:${isRed(n)?'#e63946':'#1a1a1a'};color:#fff;border-radius:3px;font-size:0.55rem;font-weight:900;border:${hit?'1.5px solid #d4af37':'1.5px solid rgba(255,255,255,0.08)'};opacity:${hit?1:0.3}">${n}</div>`
+        }).join('')}
+      </div>`
+    }).join('')
+    const zeroCnt=real.filter(x=>x===0).length
+    const zeroHit=ps.has(0)
+    return`<div style="display:flex;gap:3px;background:#111;padding:6px;border-radius:6px;border:1px solid #2a2a2a">
+      <div style="display:flex;flex-direction:column;gap:2px;width:28px;flex-shrink:0">
+        <div style="height:16px;display:flex;align-items:center;justify-content:center;font-size:0.52rem;font-weight:900;color:${zeroHit?'#d4af37':'#555'};border-bottom:1px solid #222">${zeroCnt}</div>
+        <div class="${zeroHit?'int-hit-cur':''}" style="height:78px;display:flex;align-items:center;justify-content:center;background:#00ff88;color:#000;border-radius:4px;font-weight:900;font-size:0.7rem;border:${zeroHit?'1.5px solid #d4af37':'1px solid transparent'};opacity:${zeroHit?1:0.25}">0</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:2px;flex:1">${colsHtml}</div>
+    </div>`
+  }
+
+  el.innerHTML=`
+  <!-- NEXT NUMBER PREDICTION — first -->
+  <div style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px;margin-bottom:10px">
+    <div style="font-size:.75rem;font-weight:900;color:#d4af37;letter-spacing:.5px;margin-bottom:10px">🎯 NEXT NUMBER PREDICTION</div>
+    ${!hasPred?
+      '<div style="color:#444;font-size:0.72rem;padding:6px 0">Enter a number to see the prediction.</div>'
+    :`
+    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #1a1a1a">
+      <div style="font-size:0.58rem;color:#555;font-weight:700;letter-spacing:.5px;margin-bottom:8px">PREDICTED NUMBERS (${predSet.length})</div>
+      <div class="flex-wrap">${predSet.map(n=>'<div class="mini-ball" style="background:'+numBg(n)+';color:'+numFg(n)+';border:1.5px solid #d4af37">'+n+'</div>').join('')}</div>
+    </div>
+    <div style="margin-bottom:6px;padding:10px;border:1px dashed #3a2a0a;border-radius:6px;background:repeating-linear-gradient(135deg,#140d05,#140d05 12px,#190f06 12px,#190f06 24px);display:flex;align-items:center;justify-content:center">
+      <span style="font-size:1rem;font-weight:900;letter-spacing:3px;color:#ffd700;font-family:Georgia,serif;animation:outsideTextGlow2 1.4s ease-in-out infinite">NEXT NUMBER PREDICTION</span>
+    </div>
+    ${miniBoard()}
+    `}
+  </div>
+
+  <!-- Outside Bet Prediction — second -->
+  <div class="list-box" style="margin-bottom:10px">
+    <div class="box-header" style="color:#d4af37">🎲 Outside Bet Prediction</div>
+    <div style="background:linear-gradient(160deg,#1a1006 0%,#0d0a04 100%);border:2px solid #3a2a0a;border-radius:10px;padding:10px;box-shadow:inset 0 0 30px #00000099">
+      <div style="display:flex;gap:3px">
+        ${outCell(true,'0','78px','0.9rem')}
+        <div style="flex:1;height:78px;border:1px dashed #3a2a0a;border-radius:4px;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(135deg,#140d05,#140d05 12px,#190f06 12px,#190f06 24px)">
+          <span style="font-size:1.1rem;font-weight:900;letter-spacing:4px;color:#ffd700;font-family:Georgia,serif;animation:outsideTextGlow 1.4s ease-in-out infinite">OUTSIDE BET PREDICTION</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;width:32px">
+          ${outCell(colActive.has(3),'C3','24px','0.52rem')}
+          ${outCell(colActive.has(2),'C2','24px','0.52rem')}
+          ${outCell(colActive.has(1),'C1','24px','0.52rem')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:4px;margin-left:31px;margin-right:35px">
+        ${outCell(dozenActive.has(1),'1st 12','28px','0.6rem','#66bb6a')}
+        ${outCell(dozenActive.has(2),'2nd 12','28px','0.6rem','#ffca28')}
+        ${outCell(dozenActive.has(3),'3rd 12','28px','0.6rem','#ef5350')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:4px;margin-left:31px;margin-right:35px">
+        ${outCell(altIsLow,'1 to 18','30px','0.55rem','#42a5f5')}
+        ${outCell(altIsEven,'EVEN','30px','0.6rem','#26c6da')}
+        ${outCell(altIsRed,'RED','30px','0.6rem','#ef5350')}
+        ${outCell(altIsBlack,'BLACK','30px','0.6rem','#aaa')}
+        ${outCell(altIsOdd,'ODD','30px','0.6rem','#ab47bc')}
+        ${outCell(altIsHigh,'19 to 36','30px','0.55rem','#ff9800')}
+      </div>
+    </div>
+  </div>
+
+`
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDER PATTERN LOGS
+// ════════════════════════════════════════════════════════════════
+function renderPatternLogs(){
+  const logs=document.getElementById('pattern-logs'); if(!logs)return
+  const real=history.filter(x=>x!==null)
+  const rev=[...history].reverse()
+  const v=real.filter(x=>x!==0)
+  const tot=real.length
+  const last=real[real.length-1]??null
+  const alt=real[real.length-2]??null
+
+  const pct2=(n,t)=>t?Math.round(n/t*100):0
+  const ball=n=>`<div class="mini-ball" style="background:${numBg(n)};color:${numFg(n)};border:1px solid ${numBdr(n)}">${n}</div>`
+  const ballSel=(n,sel)=>`<div class="mini-ball" style="background:${numBg(n)};color:${numFg(n)};border:1px solid ${numBdr(n)};${sel?'outline:2px solid #ffd700;':'background:'+(isRed(n)?'#e63946':n===0?'#00ff88':'#1a1a1a')+';'}">${n}</div>`
+
+  const divider=()=>`<div style="width:100%;display:flex;align-items:center;gap:8px;margin:4px 0;opacity:0.6"><div style="flex:1;height:1px;background:#d4af37"></div><span style="font-size:0.6rem;color:#d4af37;font-weight:700;white-space:nowrap">DEALER CHANGE</span><div style="flex:1;height:1px;background:#d4af37"></div></div>`
+
+  const histBalls=rev.map(n=>n===null?divider():`<div class="mini-ball" style="background:${[['#FF9F43','#000'],['#54A0FF','#000']][rev.indexOf(n)%2][0]};color:${[['#FF9F43','#000'],['#54A0FF','#000']][rev.indexOf(n)%2][1]}">${n}</div>`).join('')
+
+  // 19 Nos
+  const nos19=last!==null?wheelNeighbours(last,9):[]
+  const altNos19=alt!==null?wheelNeighbours(alt,9):[]
+  const yn19seq=real.slice(1).map((n,i)=>new Set(wheelNeighbours(real[i],9)).has(n))
+  const yn18seq=real.slice(1).map((n,i)=>!new Set(wheelNeighbours(real[i],9)).has(n))
+  const nos19C=yn19seq.filter(Boolean).length,nos18C=yn19seq.filter(x=>!x).length
+  const altYN19=real.slice(2).map((n,i)=>new Set(wheelNeighbours(real[i],9)).has(n))
+  const alt19C=altYN19.filter(Boolean).length,alt18C=altYN19.filter(x=>!x).length
+
+  // streak helpers
+  const zvC=real.filter(x=>ZV_N.has(x)).length,vC=real.filter(x=>V_N.has(x)&&!ZV_N.has(x)).length
+  const oC=real.filter(x=>O_N.has(x)).length,tC=real.filter(x=>T_N.has(x)).length
+  const zlC=real.filter(x=>ZONE1.has(x)).length,zrC=real.filter(x=>ZONE2.has(x)).length
+  const upC=real.filter(x=>UP_NUMS.has(x)).length,dnC=real.filter(x=>DOWN_NUMS.has(x)).length
+  const redC=real.filter(x=>isRed(x)).length,blkC=v.filter(x=>!isRed(x)).length
+  const oddC=v.filter(x=>x%2!==0).length,evnC=v.filter(x=>x%2===0).length
+  const hiC=v.filter(x=>x>=19).length,loC=v.filter(x=>x>=1&&x<=18).length
+  const d1C=v.filter(x=>x<=12).length,d2C=v.filter(x=>x>=13&&x<=24).length,d3C=v.filter(x=>x>=25).length
+  const r1C=v.filter(x=>x%3===1).length,r2C=v.filter(x=>x%3===2).length,r3C=v.filter(x=>x%3===0).length
+  const s13C=real.filter(x=>['S1','S3'].includes(SECTOR_MAP[x])).length
+  const s24C=real.filter(x=>['S2','S4'].includes(SECTOR_MAP[x])).length
+
+  const getVOTlbl=n=>ZV_N.has(n)?'ZV':V_N.has(n)&&!ZV_N.has(n)?'V':O_N.has(n)?'O':T_N.has(n)?'T':'?'
+  const getSector=n=>SECTOR_MAP[n]||'?'
+
+  const tagRow=(arr,fn)=>arr.map(n=>n===null?divider():fn(n)).join('')
+
+  const rbTags=tagRow(rev,n=>{
+    if(n===0)return`<div class="tag" style="background:#005500;color:#0f8;border:1px solid #0f8">Z</div>`
+    const r=isRed(n)
+    return`<div class="tag" style="background:${r?'#c0202e':'#222'};border:1px solid ${r?'#ff6677':'#555'};color:#fff">${r?'R':'B'}</div>`
+  })
+  const oeTags=tagRow(rev,n=>{
+    if(n===0)return`<div class="tag" style="background:#005500;color:#0f8;border:1px solid #0f8">Z</div>`
+    return`<div class="tag" style="background:${n%2!==0?'#6a0080':'#0d47a1'};color:#fff">${n%2!==0?'O':'E'}</div>`
+  })
+  const hlTags=tagRow(rev,n=>{
+    if(n===0)return`<div class="tag" style="background:#005500;color:#0f8;border:1px solid #0f8">Z</div>`
+    return`<div class="tag" style="background:${n>=19?'#bf360c':'#01579b'};color:#fff">${n>=19?'H':'L'}</div>`
+  })
+  const dozTags=tagRow(rev,n=>{
+    if(n===0)return`<div class="tag" style="background:#005500;color:#0f8;border:1px solid #0f8">Z</div>`
+    const d=Math.ceil(n/12)
+    return`<div class="tag" style="background:${d===1?'#006064':d===2?'#880e4f':'#1b5e20'};color:#fff">D${d}</div>`
+  })
+  const rowTags=tagRow(rev,n=>{
+    if(n===0)return`<div class="tag" style="background:#005500;color:#0f8;border:1px solid #0f8">Z</div>`
+    const r=n%3===0?3:n%3
+    return`<div class="tag" style="background:${r===1?'#1565c0':r===2?'#6a1b9a':'#e65100'};color:#fff">R${r}</div>`
+  })
+  const votTags=tagRow(rev,n=>{
+    if(n===0)return`<div class="tag" style="background:#1a237e;color:#42a5f5;border:1px solid #42a5f5">ZV</div>`
+    const t=getVOTlbl(n)
+    const bg=t==='ZV'?'#1a237e':t==='V'?'#1565c0':t==='O'?'#c2185b':t==='T'?'#f57c00':'#333'
+    return`<div class="tag" style="background:${bg};color:#fff">${t}</div>`
+  })
+  const s1324Tags=tagRow(rev,n=>{
+    const s=getSector(n),grp=(s==='S1'||s==='S3')?'S13':'S24'
+    return`<div class="tag" style="background:${grp==='S13'?'#b45309':'#1e3a8a'};border:1px solid ${grp==='S13'?'#f59e0b':'#60a5fa'};color:#fff">${grp}</div>`
+  })
+  const zLRTags=tagRow(rev,n=>{
+    if(n===null)return divider()
+    const z=ZONE1.has(n)?'ZL':ZONE2.has(n)?'ZR':'?'
+    return`<div class="tag" style="background:${z==='ZL'?'#1565c0':'#6a1b9a'};border:1px solid ${z==='ZL'?'#42a5f5':'#ba68c8'};color:#fff">${z}</div>`
+  })
+  const udTags=tagRow(rev,n=>{
+    const ud=UP_NUMS.has(n)?'UP':DOWN_NUMS.has(n)?'DN':'?'
+    return`<div class="tag" style="background:${ud==='UP'?'#00695c':ud==='DN'?'#b71c1c':'#333'};border:1px solid ${ud==='UP'?'#26a69a':ud==='DN'?'#ef5350':'#555'};color:#fff">${ud==='UP'?'UP':ud==='DN'?'DN':'Z'}</div>`
+  })
+  const nbrTags=rev.map((n,i)=>{
+    if(n===null)return divider()
+    const lbl=getNeighbourLabel(n,history.length-1-i,history)
+    const isR=lbl.startsWith('R'),isA=lbl.startsWith('A')
+    const col=isR?'#FFD700':isA?'#00E5FF':'#333'
+    const txtC=(isR||isA)?'#000':'#777'
+    return`<div style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;margin:2px">
+      <div style="position:relative;width:36px;height:36px;flex-shrink:0">
+        <div style="width:36px;height:36px;background:${col};clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);position:absolute;top:0;left:0"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:900;color:${txtC};padding-top:2px">${lbl}</div>
+      </div>
+      <span style="font-size:0.48rem;color:#888;font-weight:600">${n}</span>
+    </div>`
+  }).join('')
+
+  const yn19html=yn19seq.length?[...yn19seq].reverse().map((hit,i)=>{
+    const n=real.slice(1).reverse()[i]
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="width:36px;height:30px;border-radius:4px;background:${hit?'#1db954':'#e53935'};border:${hit?'2px solid #1db954':'2px solid #e53935'};display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:900;color:#fff">${hit?'19 nos':'18 nos'}</div><span style="font-size:0.55rem;color:#666">${n}</span></div>`
+  }).join(''):''
+
+  logs.innerHTML=`
+  <!-- Hit History -->
+  <div class="list-box"><div class="box-header">Hit History</div><div class="flex-wrap">${histBalls}</div></div>
+
+  <!-- 19 Nos -->
+  <div class="list-box">
+    <div class="box-header">19 Nos — 19nos:${nos19C}(${pct2(nos19C,yn19seq.length)}%) 18nos:${nos18C}(${pct2(nos18C,yn19seq.length)}%)</div>
+    ${last!==null?`
+      <div class="flex-wrap" style="margin-bottom:10px">${yn19html}</div>
+      <div class="flex-wrap">${nos19.sort((a,b)=>a-b).map(n=>ballSel(n,n===last)).join('')}</div>
+    `:`<div style="color:#444;font-size:.75rem">No spins yet</div>`}
+  </div>
+
+  <!-- Alt 19 Nos -->
+  <div class="list-box">
+    <div class="box-header">Alt 19 Nos — A19:${alt19C}(${pct2(alt19C,altYN19.length)}%) A18:${alt18C}(${pct2(alt18C,altYN19.length)}%)</div>
+    ${alt!==null?`<div class="flex-wrap">${altNos19.sort((a,b)=>a-b).map(n=>ballSel(n,n===alt)).join('')}</div>`:
+    `<div style="color:#444;font-size:.75rem">Need 2 spins</div>`}
+  </div>
+
+  <!-- S13 / S24 -->
+  <div class="list-box"><div class="box-header">S13/S24 — S13:${s13C}(${pct2(s13C,tot)}%) S24:${s24C}(${pct2(s24C,tot)}%)</div><div class="flex-wrap">${s1324Tags}</div></div>
+
+  <!-- Zone L/R -->
+  <div class="list-box"><div class="box-header">Zone L/R — ZL:${zlC}(${pct2(zlC,tot)}%) ZR:${zrC}(${pct2(zrC,tot)}%)</div><div class="flex-wrap">${zLRTags}</div></div>
+
+  <!-- Up/Down -->
+  <div class="list-box"><div class="box-header">Up/Down — UP:${upC}(${pct2(upC,tot)}%) DN:${dnC}(${pct2(dnC,tot)}%)</div><div class="flex-wrap">${udTags}</div></div>
+
+  <!-- ZV/V/O/T -->
+  <div class="list-box"><div class="box-header">ZV/V/O/T — ZV:${zvC}(${pct2(zvC,tot)}%) V:${vC}(${pct2(vC,tot)}%) O:${oC}(${pct2(oC,tot)}%) T:${tC}(${pct2(tC,tot)}%)</div><div class="flex-wrap">${votTags}</div></div>
+
+  <!-- Neighbour -->
+  <div class="list-box"><div class="box-header">Neighbour (R / R1 / R2 / R3 / A / A1 / A2 / A3 / ∅)</div><div class="flex-wrap">${nbrTags}</div></div>
+
+  <!-- Row -->
+  <div class="list-box"><div class="box-header">Row — R1:${r1C}(${pct2(r1C,v.length)}%) R2:${r2C}(${pct2(r2C,v.length)}%) R3:${r3C}(${pct2(r3C,v.length)}%)</div><div class="flex-wrap">${rowTags}</div></div>
+
+  <!-- Dozen -->
+  <div class="list-box"><div class="box-header">Dozen — D1:${d1C}(${pct2(d1C,v.length)}%) D2:${d2C}(${pct2(d2C,v.length)}%) D3:${d3C}(${pct2(d3C,v.length)}%)</div><div class="flex-wrap">${dozTags}</div></div>
+
+  <!-- Red/Black -->
+  <div class="list-box"><div class="box-header">Red/Black — Red:${redC}(${pct2(redC,tot)}%) Black:${blkC}(${pct2(blkC,tot)}%)</div><div class="flex-wrap">${rbTags}</div></div>
+
+  <!-- Odd/Even -->
+  <div class="list-box"><div class="box-header">Odd/Even — Odd:${oddC}(${pct2(oddC,v.length)}%) Even:${evnC}(${pct2(evnC,v.length)}%)</div><div class="flex-wrap">${oeTags}</div></div>
+
+  <!-- High/Low -->
+  <div class="list-box"><div class="box-header">High/Low — High:${hiC}(${pct2(hiC,v.length)}%) Low:${loC}(${pct2(loC,v.length)}%)</div><div class="flex-wrap">${hlTags}</div></div>
+  `
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDER OCCURRENCE TABLE
+// ════════════════════════════════════════════════════════════════
+function renderOccTable(){
+  const cont=document.getElementById('occ-content'); if(!cont)return
+  const real=history.filter(x=>x!==null),counts={}
+  real.forEach(n=>{counts[n]=(counts[n]||0)+1})
+  const header=`<div class="table-row" style="position:sticky;top:0;z-index:10;background:#000">
+    <div class="row-n" style="color:#aaa;font-size:.65rem">#</div>
+    <div class="row-c" style="color:#aaa;font-size:.65rem">CNT</div>
+    <div class="row-h" style="color:#aaa;font-size:.65rem">SPINS</div></div>`
+  const rows=Array.from({length:37},(_,i)=>{
+    const cnt=counts[i]||0
+    const spins=real.map((x,idx)=>x===i?idx+1:null).filter(Boolean).join(', ')
+    const tc=i===0?'#0f8':isRed(i)?'#f44':'#fff'
+    return`<div class="table-row">
+      <div class="row-n" style="color:${tc}">${i}</div>
+      <div class="row-c">${cnt||0}</div>
+      <div class="row-h">${cnt?spins:'—'}</div></div>`
+  }).join('')
+  cont.innerHTML=header+rows
+}
+
+// ════════════════════════════════════════════════════════════════
+// MASTER RENDER
+// ════════════════════════════════════════════════════════════════
+function render(){
+  renderDashboard()
+  renderBoard()
+  drawWheel()
+  renderPrediction()
+  renderPatternLogs()
+  renderOccTable()
+}
+
+// ════════════════════════════════════════════════════════════════
+// INITIAL HTML STRUCTURE
+// ════════════════════════════════════════════════════════════════
+document.getElementById('root').innerHTML=`
+<!-- Watermark -->
+<div aria-hidden style="position:fixed;inset:0;z-index:99998;pointer-events:none;overflow:hidden;opacity:0.035;user-select:none">
+  ${Array.from({length:30},(_,i)=>`<div style="position:absolute;top:${(i%7)*15}%;left:${Math.floor(i/7)*25-10}%;transform:rotate(-30deg);font-size:.9rem;font-weight:900;color:#fff;white-space:nowrap">ROULETTE MASTER</div>`).join('')}
+</div>
+
+<div class="main-wrapper">
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div id="dashboard" class="dashboard"></div>
+
+    <div class="input-container">
+      <div class="wheel-box">
+        <svg id="wheel-svg" class="wheel-svg" viewBox="0 0 900 400" overflow="visible" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="board-wrap">
+        <div id="zero-cell" class="zero-cell">0</div>
+        <div id="board-grid" class="board-grid"></div>
+      </div>
+      <div style="display:flex;gap:8px;width:95%">
+        <button onclick="addDealerChange()" style="flex:1;background:#1a1a1a;border:1px solid #d4af37;border-radius:6px;color:#d4af37;font-weight:700;font-size:.8rem;padding:8px 20px;cursor:pointer;letter-spacing:.5px">🔄 DEALER CHANGE</button>
+        <button onclick="undo()" style="background:#2a2a2a;border:1px solid #555;border-radius:6px;color:#aaa;font-weight:700;font-size:.8rem;padding:8px 16px;cursor:pointer">↩ UNDO</button>
+      </div>
+    </div>
+
+    <div id="pred-section" class="scrollable-logs-zone"></div>
+    <div id="pattern-logs" class="scrollable-logs-zone"></div>
+
+    <div class="bottom-controls">
+      <button class="btn" style="background:#444" onclick="undo()">↩ UNDO</button>
+      <button class="btn" style="background:#1a6b2a" onclick="newSession()">✚ NEW SESSION</button>
+    </div>
+    <div class="bottom-sync-row">
+      <button class="btn" style="background:#007bff;flex:1;padding:12px" onclick="alert('Cloud sync disabled in v2.0')">☁ SYNC TO CLOUD</button>
+      <button class="btn" style="background:#d4af37;color:#000;flex:1;padding:12px" onclick="window.print()">🖨 PRINT</button>
+    </div>
+    <div style="padding:8px 12px;background:#0a0a0a;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #1a1a1a">
+      <span style="font-size:.65rem;color:#444">👤 v2.0</span>
+      <span style="font-size:.6rem;color:#555">Roulette Master v2</span>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div style="display:flex;gap:4px;margin-bottom:10px;position:sticky;top:0;z-index:100;background:#050505;padding-bottom:8px">
+      <button id="tab-occ" class="tab-btn active-tab" onclick="switchTab('occ')">Occurrence</button>
+      <button id="tab-sessions" class="tab-btn" onclick="switchTab('sessions')">Sessions</button>
+      <button id="tab-analytics" class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
+    </div>
+    <div id="panel-occ"><div id="occ-content"></div></div>
+    <div id="panel-sessions" style="display:none">
+      <div style="color:#555;font-size:.75rem;padding:20px;text-align:center">Sessions synced to cloud.<br>Connect Supabase to view.</div>
+    </div>
+    <div id="panel-analytics" style="display:none">
+      <div style="color:#555;font-size:.75rem;padding:20px;text-align:center">Analytics available after syncing sessions.</div>
+    </div>
+  </div>
+</div>
+`
+
+render()
+</script>
+</body>
+</html>
