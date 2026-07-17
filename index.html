@@ -4,58 +4,98 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Roulette Master</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,600&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
+:root{
+  --ink:#0a0d0a;
+  --panel:#12160f;
+  --panel-2:#171c14;
+  --line:#2a2f24;
+  --line-soft:#20241c;
+  --felt:#0e3324;
+  --felt-2:#0a2519;
+  --brass:#c9a24c;
+  --brass-bright:#e8c874;
+  --brass-dim:#8a7439;
+  --cream:#efe7d6;
+  --cream-dim:#a9a290;
+  --crimson:#a92b3e;
+  --crimson-bright:#d94a5f;
+  --emerald:#1f9d63;
+  --ocean:#3c7ea8;
+  --font-display:'Fraunces',Georgia,serif;
+  --font-body:'Inter',-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;-webkit-user-select:none;user-select:none}
 input,textarea,select{-webkit-user-select:text;user-select:text}
-body{font-family:'Segoe UI',sans-serif;background:#000;color:#fff}
+body{font-family:var(--font-body);background:var(--ink);color:var(--cream);background-image:radial-gradient(ellipse 900px 500px at 50% -10%,#152018 0%,var(--ink) 60%)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--brass-dim)}
 .main-wrapper{display:flex;flex-direction:row;min-height:100vh}
-.left-panel{flex:1.6;display:flex;flex-direction:column;border-right:2px solid #333}
-.right-panel{flex:1;background:#050505;padding:10px}
-.dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:10px;background:#111}
-.card{background:#ffffff0d;border:1px solid #444;padding:6px 4px;border-radius:4px;text-align:center}
-.lbl{font-size:.55rem;color:#aaa;display:block;margin-bottom:2px}
-.val{font-size:1rem;font-weight:800;color:#d4af37;line-height:1.2}
-.input-container{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px 0}
-.wheel-box{width:95%;max-width:560px}
+.left-panel{flex:1.6;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+.right-panel{flex:1;background:var(--ink);padding:10px}
+.app-header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:14px 16px 12px;background:linear-gradient(180deg,var(--panel) 0%,var(--ink) 100%);border-bottom:1px solid var(--brass-dim)}
+.app-header .brand{display:flex;flex-direction:column;gap:2px}
+.app-header .eyebrow{font-family:var(--font-mono);font-size:.6rem;letter-spacing:2.5px;color:var(--brass-dim);text-transform:uppercase}
+.app-header .wordmark{font-family:var(--font-display);font-style:italic;font-weight:600;font-size:1.5rem;color:var(--brass-bright);letter-spacing:.3px}
+.app-header .status{font-family:var(--font-mono);font-size:.62rem;color:var(--cream-dim);text-align:right;line-height:1.5}
+.app-header .status b{color:var(--brass);font-weight:700}
+.dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px;background:var(--panel);border-bottom:1px solid var(--line)}
+.card{background:var(--panel-2);border:1px solid var(--line);padding:8px 5px;border-radius:6px;text-align:center;transition:border-color .2s}
+.card:hover{border-color:var(--brass-dim)}
+.lbl{font-family:var(--font-mono);font-size:.52rem;color:var(--cream-dim);display:block;margin-bottom:3px;letter-spacing:.4px;text-transform:uppercase}
+.val{font-size:1rem;font-weight:800;color:var(--brass);line-height:1.2;font-family:var(--font-body)}
+.input-container{display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0}
+.wheel-box{width:95%;max-width:560px;position:relative}
+.wheel-box::before{content:'';position:absolute;inset:-14px -14px 6px;border:1px solid var(--line-soft);border-radius:50%;pointer-events:none;opacity:.5}
 .wheel-svg{width:100%;height:auto;display:block;overflow:visible}
-@keyframes ringPulse{0%,to{stroke-width:5;opacity:1;stroke:#ffe566}50%{stroke-width:9;opacity:.7;stroke:gold}}
-.wheel-ring-selected{animation:ringPulse 1s ease-in-out infinite;stroke:#ffe566!important;stroke-width:6!important;filter:drop-shadow(0 0 6px #ffd700)}
-.wheel-ring-history{stroke:#00e5ff!important;stroke-width:4!important;opacity:.85!important;filter:drop-shadow(0 0 4px #00e5ff)}
-.wheel-ring-hot{animation:hotBlink .8s ease-in-out infinite;stroke:#ff3d00!important;stroke-width:6!important;filter:drop-shadow(0 0 10px #ff3d00)}
+@keyframes ringPulse{0%,to{stroke-width:5;opacity:1;stroke:var(--brass-bright)}50%{stroke-width:9;opacity:.7;stroke:var(--brass)}}
+.wheel-ring-selected{animation:ringPulse 1s ease-in-out infinite;stroke:var(--brass-bright)!important;stroke-width:6!important;filter:drop-shadow(0 0 6px #e8c87499)}
+.wheel-ring-history{stroke:var(--ocean)!important;stroke-width:4!important;opacity:.85!important;filter:drop-shadow(0 0 4px #3c7ea899)}
+.wheel-ring-hot{animation:hotBlink .8s ease-in-out infinite;stroke:var(--crimson-bright)!important;stroke-width:6!important;filter:drop-shadow(0 0 10px #d94a5f99)}
 @keyframes hotBlink{0%,to{opacity:1}50%{opacity:.35}}
-.wheel-ring-predicted{stroke:#d4af37!important;stroke-width:4!important;opacity:0.8!important}
-.board-wrap{width:95%;background:#003d21;padding:8px;border-radius:8px;border:2px solid #005a32;display:flex;gap:4px}
-.zero-cell{width:44px;display:flex;align-items:center;justify-content:center;background:#0f8;color:#000;cursor:pointer;border-radius:4px;font-weight:700;font-size:1rem}
+.wheel-ring-predicted{stroke:var(--brass)!important;stroke-width:4!important;opacity:0.8!important}
+.board-wrap{width:95%;background:linear-gradient(160deg,var(--felt) 0%,var(--felt-2) 100%);padding:9px;border-radius:10px;border:2px solid var(--brass-dim);display:flex;gap:4px;box-shadow:inset 0 0 24px #00000066}
+.zero-cell{width:44px;display:flex;align-items:center;justify-content:center;background:var(--emerald);color:#04140c;cursor:pointer;border-radius:5px;font-weight:800;font-size:1rem;font-family:var(--font-body);border:1px solid #3fcf94}
 .board-grid{display:grid;grid-template-rows:repeat(3,1fr);grid-auto-flow:column;gap:3px;flex-grow:1}
-.board-cell{height:40px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,.1)}
-.board-cell.selected,.zero-cell.selected{outline:2.5px solid #ffd700;box-shadow:0 0 8px #ffd70088}
-.board-cell.predicted{outline:2px solid #d4af37!important;box-shadow:0 0 6px #d4af3766!important}
-.zero-cell.predicted{outline:2px solid #d4af37!important;box-shadow:0 0 6px #d4af3766!important}
-.scrollable-logs-zone{padding:12px;background:#080808}
-.list-box{background:#111;border-radius:8px;padding:10px;border:1px solid #333;margin-bottom:10px}
-.box-header{color:#d4af37;font-size:.75rem;font-weight:700;margin-bottom:8px;border-bottom:1px solid #333;padding-bottom:5px}
+.board-cell{height:40px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;border-radius:5px;cursor:pointer;border:1px solid rgba(255,255,255,.08);transition:transform .1s}
+.board-cell:active{transform:scale(.94)}
+.board-cell.selected,.zero-cell.selected{outline:2.5px solid var(--brass-bright);box-shadow:0 0 10px #e8c87488}
+.board-cell.predicted{outline:2px solid var(--brass)!important;box-shadow:0 0 6px #c9a24c66!important}
+.zero-cell.predicted{outline:2px solid var(--brass)!important;box-shadow:0 0 6px #c9a24c66!important}
+.scrollable-logs-zone{padding:12px;background:var(--ink)}
+.list-box{background:var(--panel);border-radius:8px;padding:11px;border:1px solid var(--line);margin-bottom:10px}
+.box-header{color:var(--brass);font-size:.68rem;font-weight:700;margin-bottom:9px;border-bottom:1px solid var(--line);padding-bottom:6px;font-family:var(--font-mono);letter-spacing:.3px;text-transform:uppercase}
 .flex-wrap{display:flex;flex-wrap:wrap;gap:5px}
-.mini-ball{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
-.tag{width:42px;height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
-.bottom-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:#0a0a0a;border-top:1px solid #2a2a2a}
-.bottom-sync-row{display:flex;gap:8px;padding:0 12px 10px;background:#0a0a0a;border-bottom:2px solid #d4af37}
-.btn{padding:12px;border:none;border-radius:6px;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem}
-.table-row{display:grid;grid-template-columns:44px 36px 1fr;border-bottom:1px solid #222}
-.row-n{background:#111;padding:7px 4px;text-align:center;font-weight:700}
-.row-c{background:#1a1a1a;padding:7px 4px;text-align:center;font-weight:800;color:#00e5ff;font-size:.8rem;border-left:1px solid #333;border-right:1px solid #333}
-.row-h{padding:7px 8px;color:#d4af37;font-family:monospace;font-size:.72rem;word-break:break-all}
-.tab-btn{flex:1;padding:8px 4px;border:1px solid #444;background:#111;color:#aaa;font-size:.7rem;font-weight:700;border-radius:4px;cursor:pointer}
-.active-tab{background:#d4af37!important;color:#000!important;border-color:#d4af37!important}
-.spinner{width:28px;height:28px;border:3px solid #333;border-top:3px solid #d4af37;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+.mini-ball{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;font-family:var(--font-body)}
+.tag{width:42px;height:30px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;font-family:var(--font-mono)}
+.bottom-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:var(--panel);border-top:1px solid var(--line)}
+.bottom-sync-row{display:flex;gap:8px;padding:0 12px 10px;background:var(--panel);border-bottom:2px solid var(--brass-dim)}
+.btn{padding:12px;border:none;border-radius:7px;color:var(--cream);font-weight:700;cursor:pointer;font-size:.82rem;font-family:var(--font-body);transition:filter .15s,transform .1s}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:scale(.98)}
+.table-row{display:grid;grid-template-columns:44px 36px 1fr;border-bottom:1px solid var(--line-soft)}
+.row-n{background:var(--panel);padding:7px 4px;text-align:center;font-weight:700;font-family:var(--font-body)}
+.row-c{background:var(--panel-2);padding:7px 4px;text-align:center;font-weight:800;color:var(--ocean);font-size:.8rem;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.row-h{padding:7px 8px;color:var(--brass);font-family:var(--font-mono);font-size:.7rem;word-break:break-all}
+.tab-btn{flex:1;padding:9px 4px;border:1px solid var(--line);background:var(--panel);color:var(--cream-dim);font-size:.68rem;font-weight:700;border-radius:6px;cursor:pointer;font-family:var(--font-mono);letter-spacing:.3px;text-transform:uppercase;transition:border-color .15s,color .15s}
+.tab-btn:hover{border-color:var(--brass-dim);color:var(--cream)}
+.active-tab{background:var(--brass)!important;color:#1a1204!important;border-color:var(--brass)!important}
+.spinner{width:28px;height:28px;border:3px solid var(--line);border-top:3px solid var(--brass);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes predictBlink{0%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.06)}to{opacity:1;transform:scale(1)}}
 @keyframes outerBlink{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes outsideTextGlow{0%,100%{opacity:1;text-shadow:0 0 10px #ffd700cc,0 0 20px #ffd70066}50%{opacity:.4;text-shadow:0 0 5px #ffd70055}}
-@keyframes outsideTextGlow2{0%,100%{opacity:1;text-shadow:0 0 10px #ffd700cc,0 0 20px #ffd70066}50%{opacity:.4;text-shadow:0 0 5px #ffd70055}}
-@keyframes intBlink{0%,100%{opacity:1;box-shadow:0 0 5px #d4af37aa}50%{opacity:.3;box-shadow:none}}
+@keyframes outsideTextGlow{0%,100%{opacity:1;text-shadow:0 0 10px #e8c874cc,0 0 20px #e8c87466}50%{opacity:.4;text-shadow:0 0 5px #e8c87455}}
+@keyframes outsideTextGlow2{0%,100%{opacity:1;text-shadow:0 0 10px #e8c874cc,0 0 20px #e8c87466}50%{opacity:.4;text-shadow:0 0 5px #e8c87455}}
+@keyframes intBlink{0%,100%{opacity:1;box-shadow:0 0 5px #c9a24caa}50%{opacity:.3;box-shadow:none}}
 
 .int-hit-cur{animation:intBlink .85s ease-in-out infinite}
-@media(max-width:768px){.main-wrapper{flex-direction:column}.left-panel{border-right:none}.right-panel{border-top:2px solid #d4af37}.dashboard{grid-template-columns:repeat(2,1fr)}.board-cell{height:34px;font-size:.85rem}.zero-cell{width:36px;font-size:.85rem}.val{font-size:.9rem}}
+@media(max-width:768px){.main-wrapper{flex-direction:column}.left-panel{border-right:none}.right-panel{border-top:2px solid var(--brass-dim)}.dashboard{grid-template-columns:repeat(2,1fr)}.board-cell{height:34px;font-size:.85rem}.zero-cell{width:36px;font-size:.85rem}.val{font-size:.9rem}.app-header .wordmark{font-size:1.25rem}}
 </style>
 </head>
 <body>
@@ -84,10 +124,10 @@ const SECTOR_MAP={}
 
 // ════════════════════════════════════════════════════════════════
 // DEMO PREDICTION SEQUENCE  (reverse of original list)
-// Original: 28,7,14,28,22,2,6,8,11,24,23,34,30,14,4,11,2,15,21,24,21,11,19,18,33,6,17,30,36,15,10,24,34,5,8,2,10,31,27,33,21,23,21,16,1,35,32,18,34,14,36
+// Original: 32,28,7,14,28,22,2,6,8,11,24,23,34,30,14,4,11,2,15,21,24,21,11,19,18,33,6,17,30,36,15,10,24,34,5,8,2,10,31,27,33,21,23,21,16,1,35,32,18,34,14,36
 // Reversed = user enters these; app predicts the NEXT one each time
 // ════════════════════════════════════════════════════════════════
-const DEMO_SEQ=[36,14,34,18,32,35,1,16,21,23,21,33,27,31,10,2,8,5,34,24,10,15,36,30,17,6,33,18,19,11,21,24,21,15,2,11,4,14,30,34,23,24,11,8,6,2,22,28,14,7,28]
+const DEMO_SEQ=[36,14,34,18,32,35,1,16,21,23,21,33,27,31,10,2,8,5,34,24,10,15,36,30,17,6,33,18,19,11,21,24,21,15,2,11,4,14,30,34,23,24,11,8,6,2,22,28,14,7,28,32]
 
 // ════════════════════════════════════════════════════════════════
 // STATE
@@ -100,9 +140,9 @@ let activeTab='occ'
 // HELPERS
 // ════════════════════════════════════════════════════════════════
 const isRed=n=>REDS.has(n)
-const numBg=n=>n===0?'#00ff88':isRed(n)?'#e63946':'#1a1a1a'
-const numFg=n=>n===0?'#000':'#fff'
-const numBdr=n=>n===0?'#00ff88':isRed(n)?'#ff6677':'rgba(255,255,255,.1)'
+const numBg=n=>n===0?'#1f9d63':isRed(n)?'#a92b3e':'#1a1d17'
+const numFg=n=>n===0?'#04140c':'#efe7d6'
+const numBdr=n=>n===0?'#3fcf94':isRed(n)?'#d94a5f':'rgba(239,231,214,.12)'
 const pct=(n,t)=>t?Math.round(n/t*100):0
 
 function wheelNeighbours(n,each){
@@ -176,7 +216,7 @@ function drawWheel(){
   }
 
   // VOT color bands
-  const votColor=n=>ZV_N.has(n)?'#1a237e':V_N.has(n)&&!ZV_N.has(n)?'#1565c0':O_N.has(n)?'#c2185b':T_N.has(n)?'#f57c00':'#555'
+  const votColor=n=>ZV_N.has(n)?'#2d4a7a':V_N.has(n)&&!ZV_N.has(n)?'#3c7ea8':O_N.has(n)?'#a3436b':T_N.has(n)?'#c07a2e':'#555'
   const votLabel=n=>ZV_N.has(n)?'ZV':O_N.has(n)?'O':T_N.has(n)?'T':V_N.has(n)?'V':'?'
 
   // Outer rings
@@ -216,7 +256,7 @@ function drawWheel(){
     const x2=cx+oRx*Math.cos(aE),y2=cy+oRy*Math.sin(aE)
     svg.appendChild(el('path',{d:`M ${x1} ${y1} A ${oRx} ${oRy} 0 ${lg} 1 ${x2} ${y2}`,fill:'none',stroke:color,'stroke-width':'4',opacity:'0.75','stroke-linecap':'round'}))
   }
-  drawZone(ZONE1,'#42a5f5'); drawZone(ZONE2,'#ba68c8')
+  drawZone(ZONE1,'#3c7ea8'); drawZone(ZONE2,'#8a6ba8')
 
   const real=history.filter(x=>x!==null)
   const histCounts={}; real.forEach(n=>{histCounts[n]=(histCounts[n]||0)+1})
@@ -228,19 +268,19 @@ function drawWheel(){
   const grp=el('g',{id:'wheel-group'})
   WHEEL_ORDER.forEach((n,i)=>{
     const angle=(i/total)*2*Math.PI,bx=cx+rx*Math.cos(angle),by=cy+ry*Math.sin(angle)
-    const fill=n===0?'#00cc66':isRed(n)?'#c0202e':'#1c1c1c'
-    const stroke=n===0?'#00ff88':isRed(n)?'#ff6677':'#555'
+    const fill=n===0?'#1f9d63':isRed(n)?'#a92b3e':'#1a1d17'
+    const stroke=n===0?'#3fcf94':isRed(n)?'#d94a5f':'#4a4d42'
     const g=el('g',{id:`wg-${n}`,style:'cursor:pointer'}); g.onclick=()=>addNumber(n)
-    if(ZONE1.has(n)) g.appendChild(el('circle',{cx:bx,cy:by,r:25,fill:'none',stroke:'#42a5f5','stroke-width':'2',opacity:'0.5'}))
-    else if(ZONE2.has(n)) g.appendChild(el('circle',{cx:bx,cy:by,r:25,fill:'none',stroke:'#ba68c8','stroke-width':'2',opacity:'0.5'}))
+    if(ZONE1.has(n)) g.appendChild(el('circle',{cx:bx,cy:by,r:25,fill:'none',stroke:'#3c7ea8','stroke-width':'2',opacity:'0.5'}))
+    else if(ZONE2.has(n)) g.appendChild(el('circle',{cx:bx,cy:by,r:25,fill:'none',stroke:'#8a6ba8','stroke-width':'2',opacity:'0.5'}))
     const circ=el('circle',{cx:bx,cy:by,r:22,fill,stroke,'stroke-width':'1.5',id:`wc-${n}`})
     g.appendChild(circ)
-    const txt=el('text',{x:bx,y:by+5,'text-anchor':'middle',fill:n===0?'#000':'#fff','font-size':n>=10?'16':'18','font-weight':'900','font-family':'Segoe UI,sans-serif'})
+    const txt=el('text',{x:bx,y:by+5,'text-anchor':'middle',fill:n===0?'#04140c':'#efe7d6','font-size':n>=10?'16':'18','font-weight':'800','font-family':'Inter,sans-serif'})
     txt.textContent=n; g.appendChild(txt)
     // count badge
     const cnt=histCounts[n]||0
     const cRx=rx+38,cRy=ry+38,cntX=cx+cRx*Math.cos(angle),cntY=cy+cRy*Math.sin(angle)
-    const cntTxt=el('text',{x:cntX,y:cntY+4,'text-anchor':'middle',id:`wcnt-${n}`,fill:cnt>0?'#d4af37':'#444','font-size':'13','font-weight':'900','font-family':'Segoe UI,sans-serif'})
+    const cntTxt=el('text',{x:cntX,y:cntY+4,'text-anchor':'middle',id:`wcnt-${n}`,fill:cnt>0?'#c9a24c':'#3a3d34','font-size':'13','font-weight':'800','font-family':'IBM Plex Mono,monospace'})
     cntTxt.textContent=cnt; grp.appendChild(cntTxt)
     grp.appendChild(g)
   })
@@ -260,11 +300,11 @@ function drawWheel(){
   const fo=document.createElementNS(ns,'foreignObject')
   fo.setAttribute('x',450-90); fo.setAttribute('y',200-75)
   fo.setAttribute('width','180'); fo.setAttribute('height','150')
-  fo.innerHTML=`<div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;gap:5px;">
-    <input id="wf-casino" placeholder="Casino Name" maxlength="16" style="width:100%;background:rgba(0,0,0,0.7);border:1px solid #555;border-radius:4px;color:#d4af37;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
-    <input id="wf-dealer" placeholder="Dealer Name" maxlength="14" style="width:100%;background:rgba(0,0,0,0.7);border:1px solid #555;border-radius:4px;color:#d4af37;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
-    <input id="wf-table" placeholder="Table No." maxlength="6" style="width:100%;background:rgba(0,0,0,0.7);border:1px solid #555;border-radius:4px;color:#d4af37;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
-    <input id="wf-date" type="date" style="width:100%;background:rgba(0,0,0,0.7);border:1px solid #555;border-radius:4px;color:#d4af37;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
+  fo.innerHTML=`<div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;flex-direction:column;gap:5px;font-family:Inter,sans-serif">
+    <input id="wf-casino" placeholder="Casino Name" maxlength="16" style="width:100%;background:rgba(10,13,10,0.8);border:1px solid #3a3d34;border-radius:4px;color:#c9a24c;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
+    <input id="wf-dealer" placeholder="Dealer Name" maxlength="14" style="width:100%;background:rgba(10,13,10,0.8);border:1px solid #3a3d34;border-radius:4px;color:#c9a24c;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
+    <input id="wf-table" placeholder="Table No." maxlength="6" style="width:100%;background:rgba(10,13,10,0.8);border:1px solid #3a3d34;border-radius:4px;color:#c9a24c;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
+    <input id="wf-date" type="date" style="width:100%;background:rgba(10,13,10,0.8);border:1px solid #3a3d34;border-radius:4px;color:#c9a24c;font-size:0.65rem;font-weight:700;padding:4px 6px;text-align:center;outline:none;"/>
   </div>`
   svg.appendChild(fo)
 }
@@ -292,19 +332,19 @@ function renderDashboard(){
   const r1C=v.filter(x=>x%3===1).length,r2C=v.filter(x=>x%3===2).length,r3C=v.filter(x=>x%3===0).length
 
   const cards=[
-    {lbl:'Total Spins',val:String(tot),color:'#d4af37'},
-    {lbl:'R/R1/R2/R3',val:`${count('R')}/${count('R1')}/${count('R2')}/${count('R3')}`,color:'#d4af37',small:true},
+    {lbl:'Total Spins',val:String(tot),color:'#c9a24c'},
+    {lbl:'R/R1/R2/R3',val:`${count('R')}/${count('R1')}/${count('R2')}/${count('R3')}`,color:'#c9a24c',small:true},
     {lbl:'A/A1/A2/A3',val:`${count('A')}/${count('A1')}/${count('A2')}/${count('A3')}`,color:'#ff9800',small:true},
     {lbl:'19 Nos / 18 Nos',val:`${yCount} / ${nCount}`,color:'#00E676'},
     {lbl:'ZV/V/O/T',val:`${zvC}/${vC}/${oC}/${tC}`,color:'#42a5f5',small:true},
     {lbl:'Zone L / Zone R',val:`${zlC} / ${zrC}`,color:'#ba68c8'},
     {lbl:'Up / Down',val:`${upC} / ${dnC}`,color:'#26a69a'},
     {lbl:'S13 / S24',val:`${s13C} / ${s24C}`,color:'#f59e0b'},
-    {lbl:'Dozen 1/2/3',val:`${d1C}/${d2C}/${d3C}`,color:'#d4af37',small:true},
-    {lbl:'Row 1/2/3',val:`${r1C}/${r2C}/${r3C}`,color:'#d4af37',small:true},
+    {lbl:'Dozen 1/2/3',val:`${d1C}/${d2C}/${d3C}`,color:'#c9a24c',small:true},
+    {lbl:'Row 1/2/3',val:`${r1C}/${r2C}/${r3C}`,color:'#c9a24c',small:true},
     {lbl:'Odd / Even',val:`${oddC} / ${evnC}`,color:'#9c27b0'},
     {lbl:'High / Low',val:`${hiC} / ${loC}`,color:'#ff9800'},
-    {lbl:'Red / Black',val:`${redC} / ${blkC}`,color:'#e63946'},
+    {lbl:'Red / Black',val:`${redC} / ${blkC}`,color:'#a92b3e'},
     {lbl:'Spins',val:String(history.filter(x=>x!==null).length),color:'#aaa'},
   ]
   d.innerHTML=cards.map(c=>`<div class="card"><span class="lbl">${c.lbl}</span><div class="val" style="color:${c.color};font-size:${c.small?'.78rem':'1rem'}">${c.val}</div></div>`).join('')
@@ -351,7 +391,7 @@ function renderBoard(){
       if(last===n)cls+=' selected'
       else if(predSet.has(n))cls+=' predicted'
       div.className=cls
-      div.style.background=isRed(n)?'#e63946':'#1a1a1a'
+      div.style.background=isRed(n)?'#a92b3e':'#1a1d17'
       div.textContent=n; div.onclick=()=>addNumber(n)
       grid.appendChild(div)
     }
@@ -389,10 +429,10 @@ function renderPrediction(){
   const altIsHigh=prevNum!==null&&prevNum>=19
   const altIsLow=prevNum!==null&&prevNum>=1&&prevNum<=18
 
-  const outCell=(active,label,h='30px',fs='0.6rem',ac='#ffd700')=>{
-    const bg=active?`linear-gradient(160deg,${ac}44,${ac}1a)`:'linear-gradient(160deg,#1a1006,#0d0a04)'
-    const border=active?`2px solid ${ac}`:'1px solid #3a2a0a'
-    const color=active?ac:'#7a6a4a'
+  const outCell=(active,label,h='30px',fs='0.6rem',ac='#e8c874')=>{
+    const bg=active?`linear-gradient(160deg,${ac}44,${ac}1a)`:'linear-gradient(160deg,#1a1a12,#0e0f0a)'
+    const border=active?`2px solid ${ac}`:'1px solid #3a3520'
+    const color=active?ac:'#7a7458'
     const anim=active?'outerBlink 0.9s ease-in-out infinite':'none'
     const shadow=active?`0 0 10px ${ac}cc,inset 0 0 6px ${ac}55`:'inset 0 0 4px #00000088'
     return `<div style="display:flex;align-items:center;justify-content:center;border:${border};border-radius:4px;background:${bg};color:${color};font-weight:900;height:${h};font-size:${fs};animation:${anim};box-shadow:${shadow}">${label}</div>`
@@ -406,19 +446,19 @@ function renderPrediction(){
       const colCnt=real.filter(x=>colNums.includes(x)).length
       const hasPred=colNums.some(n=>ps.has(n))
       return`<div style="display:flex;flex-direction:column;gap:2px">
-        <div style="height:16px;display:flex;align-items:center;justify-content:center;font-size:0.52rem;font-weight:900;color:${hasPred?'#d4af37':'#555'};border-bottom:1px solid #222">${colCnt}</div>
+        <div style="height:16px;display:flex;align-items:center;justify-content:center;font-size:0.52rem;font-weight:900;color:${hasPred?'#c9a24c':'#555'};border-bottom:1px solid #222">${colCnt}</div>
         ${colNums.map(n=>{
           const hit=ps.has(n)
-          return`<div class="${hit?'int-hit-cur':''}" style="height:24px;display:flex;align-items:center;justify-content:center;background:${isRed(n)?'#e63946':'#1a1a1a'};color:#fff;border-radius:3px;font-size:0.55rem;font-weight:900;border:${hit?'1.5px solid #d4af37':'1.5px solid rgba(255,255,255,0.08)'};opacity:${hit?1:0.3}">${n}</div>`
+          return`<div class="${hit?'int-hit-cur':''}" style="height:24px;display:flex;align-items:center;justify-content:center;background:${isRed(n)?'#a92b3e':'#1a1d17'};color:#efe7d6;border-radius:3px;font-size:0.55rem;font-weight:900;border:${hit?'1.5px solid #c9a24c':'1.5px solid rgba(239,231,214,0.08)'};opacity:${hit?1:0.3}">${n}</div>`
         }).join('')}
       </div>`
     }).join('')
     const zeroCnt=real.filter(x=>x===0).length
     const zeroHit=ps.has(0)
-    return`<div style="display:flex;gap:3px;background:#111;padding:6px;border-radius:6px;border:1px solid #2a2a2a">
+    return`<div style="display:flex;gap:3px;background:#12160f;padding:6px;border-radius:6px;border:1px solid #2a2f24">
       <div style="display:flex;flex-direction:column;gap:2px;width:28px;flex-shrink:0">
-        <div style="height:16px;display:flex;align-items:center;justify-content:center;font-size:0.52rem;font-weight:900;color:${zeroHit?'#d4af37':'#555'};border-bottom:1px solid #222">${zeroCnt}</div>
-        <div class="${zeroHit?'int-hit-cur':''}" style="height:78px;display:flex;align-items:center;justify-content:center;background:#00ff88;color:#000;border-radius:4px;font-weight:900;font-size:0.7rem;border:${zeroHit?'1.5px solid #d4af37':'1px solid transparent'};opacity:${zeroHit?1:0.25}">0</div>
+        <div style="height:16px;display:flex;align-items:center;justify-content:center;font-size:0.52rem;font-weight:900;color:${zeroHit?'#c9a24c':'#555'};border-bottom:1px solid #222">${zeroCnt}</div>
+        <div class="${zeroHit?'int-hit-cur':''}" style="height:78px;display:flex;align-items:center;justify-content:center;background:#1f9d63;color:#04140c;border-radius:4px;font-weight:900;font-size:0.7rem;border:${zeroHit?'1.5px solid #c9a24c':'1px solid transparent'};opacity:${zeroHit?1:0.25}">0</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:2px;flex:1">${colsHtml}</div>
     </div>`
@@ -426,17 +466,17 @@ function renderPrediction(){
 
   el.innerHTML=`
   <!-- NEXT NUMBER PREDICTION — first -->
-  <div style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px;margin-bottom:10px">
-    <div style="font-size:.75rem;font-weight:900;color:#d4af37;letter-spacing:.5px;margin-bottom:10px">🎯 NEXT NUMBER PREDICTION</div>
+  <div style="background:#12160f;border:1px solid #2a2f24;border-radius:8px;padding:10px;margin-bottom:10px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:700;color:#c9a24c;letter-spacing:1px;margin-bottom:10px;text-transform:uppercase">🎯 Next Number Prediction</div>
     ${!hasPred?
-      '<div style="color:#444;font-size:0.72rem;padding:6px 0">Enter a number to see the prediction.</div>'
+      '<div style="color:#5a5f52;font-size:0.72rem;padding:6px 0">Enter a number to see the prediction.</div>'
     :`
-    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #1a1a1a">
-      <div style="font-size:0.58rem;color:#555;font-weight:700;letter-spacing:.5px;margin-bottom:8px">PREDICTED NUMBERS (${predSet.length})</div>
-      <div class="flex-wrap">${predSet.map(n=>'<div class="mini-ball" style="background:'+numBg(n)+';color:'+numFg(n)+';border:1.5px solid #d4af37">'+n+'</div>').join('')}</div>
+    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #20241c">
+      <div style="font-size:0.58rem;color:#8a8f7f;font-weight:700;letter-spacing:.5px;margin-bottom:8px;font-family:'IBM Plex Mono',monospace">PREDICTED NUMBERS (${predSet.length})</div>
+      <div class="flex-wrap">${predSet.map(n=>'<div class="mini-ball" style="background:'+numBg(n)+';color:'+numFg(n)+';border:1.5px solid #c9a24c">'+n+'</div>').join('')}</div>
     </div>
-    <div style="margin-bottom:6px;padding:10px;border:1px dashed #3a2a0a;border-radius:6px;background:repeating-linear-gradient(135deg,#140d05,#140d05 12px,#190f06 12px,#190f06 24px);display:flex;align-items:center;justify-content:center">
-      <span style="font-size:1rem;font-weight:900;letter-spacing:3px;color:#ffd700;font-family:Georgia,serif;animation:outsideTextGlow2 1.4s ease-in-out infinite">NEXT NUMBER PREDICTION</span>
+    <div style="margin-bottom:6px;padding:10px;border:1px dashed #3a3520;border-radius:6px;background:repeating-linear-gradient(135deg,#14150d,#14150d 12px,#191a0f 12px,#191a0f 24px);display:flex;align-items:center;justify-content:center">
+      <span style="font-size:1rem;font-weight:600;letter-spacing:3px;color:#e8c874;font-family:'Fraunces',Georgia,serif;font-style:italic;animation:outsideTextGlow2 1.4s ease-in-out infinite">Next Number Prediction</span>
     </div>
     ${miniBoard()}
     `}
@@ -444,12 +484,12 @@ function renderPrediction(){
 
   <!-- Outside Bet Prediction — second -->
   <div class="list-box" style="margin-bottom:10px">
-    <div class="box-header" style="color:#d4af37">🎲 Outside Bet Prediction</div>
-    <div style="background:linear-gradient(160deg,#1a1006 0%,#0d0a04 100%);border:2px solid #3a2a0a;border-radius:10px;padding:10px;box-shadow:inset 0 0 30px #00000099">
+    <div class="box-header">🎲 Outside Bet Prediction</div>
+    <div style="background:linear-gradient(160deg,#171a10 0%,#0e0f0a 100%);border:2px solid #3a3520;border-radius:10px;padding:10px;box-shadow:inset 0 0 30px #00000099">
       <div style="display:flex;gap:3px">
         ${outCell(true,'0','78px','0.9rem')}
-        <div style="flex:1;height:78px;border:1px dashed #3a2a0a;border-radius:4px;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(135deg,#140d05,#140d05 12px,#190f06 12px,#190f06 24px)">
-          <span style="font-size:1.1rem;font-weight:900;letter-spacing:4px;color:#ffd700;font-family:Georgia,serif;animation:outsideTextGlow 1.4s ease-in-out infinite">OUTSIDE BET PREDICTION</span>
+        <div style="flex:1;height:78px;border:1px dashed #3a3520;border-radius:4px;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(135deg,#14150d,#14150d 12px,#191a0f 12px,#191a0f 24px)">
+          <span style="font-size:1.1rem;font-weight:600;letter-spacing:4px;color:#e8c874;font-family:'Fraunces',Georgia,serif;font-style:italic;animation:outsideTextGlow 1.4s ease-in-out infinite">Outside Bet Prediction</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:2px;width:32px">
           ${outCell(colActive.has(3),'C3','24px','0.52rem')}
@@ -490,9 +530,9 @@ function renderPatternLogs(){
 
   const pct2=(n,t)=>t?Math.round(n/t*100):0
   const ball=n=>`<div class="mini-ball" style="background:${numBg(n)};color:${numFg(n)};border:1px solid ${numBdr(n)}">${n}</div>`
-  const ballSel=(n,sel)=>`<div class="mini-ball" style="background:${numBg(n)};color:${numFg(n)};border:1px solid ${numBdr(n)};${sel?'outline:2px solid #ffd700;':'background:'+(isRed(n)?'#e63946':n===0?'#00ff88':'#1a1a1a')+';'}">${n}</div>`
+  const ballSel=(n,sel)=>`<div class="mini-ball" style="background:${numBg(n)};color:${numFg(n)};border:1px solid ${numBdr(n)};${sel?'outline:2px solid #e8c874;':'background:'+(isRed(n)?'#a92b3e':n===0?'#1f9d63':'#1a1d17')+';'}">${n}</div>`
 
-  const divider=()=>`<div style="width:100%;display:flex;align-items:center;gap:8px;margin:4px 0;opacity:0.6"><div style="flex:1;height:1px;background:#d4af37"></div><span style="font-size:0.6rem;color:#d4af37;font-weight:700;white-space:nowrap">DEALER CHANGE</span><div style="flex:1;height:1px;background:#d4af37"></div></div>`
+  const divider=()=>`<div style="width:100%;display:flex;align-items:center;gap:8px;margin:4px 0;opacity:0.7"><div style="flex:1;height:1px;background:#c9a24c"></div><span style="font-size:0.6rem;color:#c9a24c;font-weight:700;white-space:nowrap;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px">DEALER CHANGE</span><div style="flex:1;height:1px;background:#c9a24c"></div></div>`
 
   const histBalls=rev.map(n=>n===null?divider():`<div class="mini-ball" style="background:${[['#FF9F43','#000'],['#54A0FF','#000']][rev.indexOf(n)%2][0]};color:${[['#FF9F43','#000'],['#54A0FF','#000']][rev.indexOf(n)%2][1]}">${n}</div>`).join('')
 
@@ -526,7 +566,7 @@ function renderPatternLogs(){
   const rbTags=tagRow(rev,n=>{
     if(n===0)return`<div class="tag" style="background:#005500;color:#0f8;border:1px solid #0f8">Z</div>`
     const r=isRed(n)
-    return`<div class="tag" style="background:${r?'#c0202e':'#222'};border:1px solid ${r?'#ff6677':'#555'};color:#fff">${r?'R':'B'}</div>`
+    return`<div class="tag" style="background:${r?'#a92b3e':'#22251d'};border:1px solid ${r?'#d94a5f':'#4a4d42'};color:#efe7d6">${r?'R':'B'}</div>`
   })
   const oeTags=tagRow(rev,n=>{
     if(n===0)return`<div class="tag" style="background:#005500;color:#0f8;border:1px solid #0f8">Z</div>`
@@ -677,13 +717,20 @@ function render(){
 // ════════════════════════════════════════════════════════════════
 document.getElementById('root').innerHTML=`
 <!-- Watermark -->
-<div aria-hidden style="position:fixed;inset:0;z-index:99998;pointer-events:none;overflow:hidden;opacity:0.035;user-select:none">
-  ${Array.from({length:30},(_,i)=>`<div style="position:absolute;top:${(i%7)*15}%;left:${Math.floor(i/7)*25-10}%;transform:rotate(-30deg);font-size:.9rem;font-weight:900;color:#fff;white-space:nowrap">ROULETTE MASTER</div>`).join('')}
+<div aria-hidden style="position:fixed;inset:0;z-index:99998;pointer-events:none;overflow:hidden;opacity:0.03;user-select:none">
+  ${Array.from({length:30},(_,i)=>`<div style="position:absolute;top:${(i%7)*15}%;left:${Math.floor(i/7)*25-10}%;transform:rotate(-30deg);font-size:.9rem;font-weight:700;font-family:'Fraunces',serif;font-style:italic;color:#efe7d6;white-space:nowrap">Roulette Master</div>`).join('')}
 </div>
 
 <div class="main-wrapper">
   <!-- LEFT PANEL -->
   <div class="left-panel">
+    <div class="app-header">
+      <div class="brand">
+        <span class="eyebrow">Tableside Spin Tracker</span>
+        <span class="wordmark">Roulette Master</span>
+      </div>
+      <div class="status">Session <b>v2.0</b><br>Live log</div>
+    </div>
     <div id="dashboard" class="dashboard"></div>
 
     <div class="input-container">
@@ -695,8 +742,8 @@ document.getElementById('root').innerHTML=`
         <div id="board-grid" class="board-grid"></div>
       </div>
       <div style="display:flex;gap:8px;width:95%">
-        <button onclick="addDealerChange()" style="flex:1;background:#1a1a1a;border:1px solid #d4af37;border-radius:6px;color:#d4af37;font-weight:700;font-size:.8rem;padding:8px 20px;cursor:pointer;letter-spacing:.5px">🔄 DEALER CHANGE</button>
-        <button onclick="undo()" style="background:#2a2a2a;border:1px solid #555;border-radius:6px;color:#aaa;font-weight:700;font-size:.8rem;padding:8px 16px;cursor:pointer">↩ UNDO</button>
+        <button onclick="addDealerChange()" style="flex:1;background:#171c14;border:1px solid #c9a24c;border-radius:7px;color:#c9a24c;font-weight:700;font-size:.8rem;padding:9px 20px;cursor:pointer;letter-spacing:.5px;font-family:'Inter',sans-serif">🔄 Dealer Change</button>
+        <button onclick="undo()" style="background:#171c14;border:1px solid #2a2f24;border-radius:7px;color:#a9a290;font-weight:700;font-size:.8rem;padding:9px 16px;cursor:pointer;font-family:'Inter',sans-serif">↩ Undo</button>
       </div>
     </div>
 
@@ -704,16 +751,16 @@ document.getElementById('root').innerHTML=`
     <div id="pattern-logs" class="scrollable-logs-zone"></div>
 
     <div class="bottom-controls">
-      <button class="btn" style="background:#444" onclick="undo()">↩ UNDO</button>
-      <button class="btn" style="background:#1a6b2a" onclick="newSession()">✚ NEW SESSION</button>
+      <button class="btn" style="background:#2a2f24" onclick="undo()">↩ Undo</button>
+      <button class="btn" style="background:#1f6b47" onclick="newSession()">✚ New Session</button>
     </div>
     <div class="bottom-sync-row">
-      <button class="btn" style="background:#007bff;flex:1;padding:12px" onclick="alert('Cloud sync disabled in v2.0')">☁ SYNC TO CLOUD</button>
-      <button class="btn" style="background:#d4af37;color:#000;flex:1;padding:12px" onclick="window.print()">🖨 PRINT</button>
+      <button class="btn" style="background:#3c7ea8;flex:1;padding:12px" onclick="alert('Cloud sync disabled in v2.0')">☁ Sync to Cloud</button>
+      <button class="btn" style="background:#c9a24c;color:#1a1204;flex:1;padding:12px" onclick="window.print()">🖨 Print</button>
     </div>
-    <div style="padding:8px 12px;background:#0a0a0a;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #1a1a1a">
-      <span style="font-size:.65rem;color:#444">👤 v2.0</span>
-      <span style="font-size:.6rem;color:#555">Roulette Master v2</span>
+    <div style="padding:8px 12px;background:#0a0d0a;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #20241c">
+      <span style="font-size:.65rem;color:#5a5f52;font-family:'IBM Plex Mono',monospace">v2.0</span>
+      <span style="font-size:.6rem;color:#5a5f52;font-family:'IBM Plex Mono',monospace">Roulette Master</span>
     </div>
   </div>
 
